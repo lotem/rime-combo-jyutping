@@ -1,0 +1,141 @@
+# Rime schema
+# encoding: utf-8
+
+schema:
+  schema_id: combo_jyutping
+  name: 宮保粵拼
+  version: '1.0'
+  author:
+    - 居戎氏 <chen.sst@gmail.com>
+  description: |
+    按照宮保拼音思路設計的粵拼並擊方案。
+
+    宮保拼音——並擊輸入拼音。
+    https://github.com/rime/home/wiki/ComboPinyin
+  dependencies:
+    - jyutping
+
+switches:
+  - name: ascii_mode
+    reset: 0
+    states: [ 中文, 西文 ]
+  - name: full_shape
+    states: [ 半角, 全角 ]
+  - name: simplification
+    states: [ 漢字, 汉字 ]
+  - name: ascii_punct
+    states: [ 。，, ．， ]
+
+engine:
+  processors:
+    - ascii_composer
+    - recognizer
+    - chord_composer  # 實現並擊按鍵處理
+    - key_binder
+    - speller
+    - punctuator
+    - selector
+    - navigator
+    - express_editor
+  segmentors:
+    - ascii_segmentor
+    - matcher
+    - abc_segmentor
+    - punct_segmentor
+    - fallback_segmentor
+  translators:
+    - punct_translator
+    - script_translator
+  filters:
+    - simplifier
+    - uniquifier
+
+chord_composer:
+  alphabet: 'swxdecfrvgtb hynjumki,lo.aqzp'
+  algebra:
+    - 'xlit|swxdecfrvgtb hynjumki,lo.aqzp|SCZHLFGDBKTPAEOVIUYJWMQRX----|'
+    - 'xform/^A$/ /'
+    - 'xform/^M$/,/'
+    - 'xform/^X$/./'
+    - 'xform/[-]+$//'
+    - xform/^FBM$/m/
+    - xform/^HGM$/ng/
+    - xform/^FB/m/
+    - xform/^LD/n/
+    - xform/^HG/ng/
+    - xform/^SG/gw/
+    - xform/^SK/kw/
+    - xform/^SH/w/
+    - xform/^CL/j/
+    - xform/^ZF//
+    - xform/AI/E/
+    - xform/AU/O/
+    - xform/AY/V/
+    - xform/A/aa/
+    - xform/Y/yu/
+    - xform/V(J|W?R)$/eo${1}/
+    - xform/V/oe/
+    - xform/JQ$/-ng/
+    - xform/WR$/-n/
+    - xform/MX$/-m/
+    - xform/Q$/-k/
+    - xform/R$/-t/
+    - xform/X$/-p/
+    - xform/IJ$/ei/
+    - xform/UW$/ou/
+    - xform/J$/-i/
+    - xform/W$/-u/
+    - xlit/SCZHLFGDBKTPEOIUM/sczhlfgdbktpeoium/
+    - xform/([aeiou])-([iumptk]|ng?)$/${1}${2}/
+    - xform/-/a/
+    - xform/^([iy])/j${1}/
+    - xform/^(u)/w${1}/
+
+  # 並擊完成後套用的式樣
+  output_format:
+    # 追加隔音符號
+    - "xform/^(m|ng)$/$1'/"
+    - "xform/^([bpmfdtnlgkhzcsjw]|ng|[gk]w)?(aa?|eo?|i|oe?|y?u)([iumnptk]|ng)?$/$1$2$3'/"
+    # 消除不構成合法音節的並擊組合
+    - "erase/^([A-Za-z+]+)$/"
+
+  # 並擊過程中套用的式樣
+  prompt_format:
+    # 加方括弧
+    - 'xform/^(.*)$/[$1]/'
+
+editor:
+  bindings:
+    # 退格鍵刪除一個拼音音節
+    BackSpace: back_syllable
+
+speller:
+  alphabet: "zyxwvutsrqponmlkjihgfedcba'"
+  initials: "zyxwvutsrqponmlkjihgfedcba"
+  finals: "'"
+  delimiter: " "
+  algebra:
+    # 拼音音節一律後加隔音符號，避免音節切分歧義
+    - "xform/^([a-z]+)$/$1'/"
+
+translator:
+  dictionary: jyutping
+  prism: combo_jyutping
+  preedit_format:
+    - "xform/'//"
+
+punctuator:
+  import_preset: default
+
+key_binder:
+  import_preset: default
+
+recognizer:
+  import_preset: default
+
+__patch:
+  # 使用八股文語言模型
+  - grammar:/hant?
+
+  # 用家自選配置
+  - combo_jyutping.custom:/patch?
