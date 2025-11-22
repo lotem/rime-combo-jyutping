@@ -84,7 +84,7 @@
 ### 學習資料
 
   - [宮保拼音教程](https://github.com/rime/home/wiki/ComboPinyin)
-  - [宮保拼音鍵位練習](https://lotem.github.io/typewriter/)
+  - [宮保拼音鍵位練習](https://rime.io/typewriter/)
 
     按 <kbd>ESC</kbd> <kbd>TAB</kbd> 選擇「宮保粵拼」輸入方案。
 
