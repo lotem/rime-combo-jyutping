@@ -73,11 +73,11 @@ chord_composer:
     - xform/AY/V/
     - xform/A/aa/
     - xform/Y/yu/
-    - xform/V(J|W?R)$/eo${1}/
+    - xform/V(J|[JW]?R)$/eo${1}/
     - xform/V/oe/
-    - xform/JQ$/-ng/
-    - xform/WR$/-n/
-    - xform/MX$/-m/
+    - xform/[JWM]Q$/-ng/
+    - xform/[JW]R$/-n/
+    - xform/[JM]X$/-m/
     - xform/Q$/-k/
     - xform/R$/-t/
     - xform/X$/-p/
