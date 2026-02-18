@@ -4,7 +4,7 @@
 schema:
   schema_id: combo_jyutping
   name: 宮保粵拼
-  version: '1.0'
+  version: '2.0'
   author:
     - 居戎氏 <chen.sst@gmail.com>
   description: |
@@ -51,20 +51,16 @@ engine:
     - uniquifier
 
 chord_composer:
-  alphabet: 'swxdecfrvgtb hynjumki,lo.aqzp'
+  alphabet: 'swxdecfrvgtb hynjumkilopaqz'
   algebra:
-    - 'xlit|swxdecfrvgtb hynjumki,lo.aqzp|SCZHLFGDBKTPAEOVIUYJWMQRX----|'
+    - 'xlit|swxdecfrvgtb hynjumkilopaqz|SCZHLFGDBKTPAEOVIUYJWQRX---|'
     - 'xform/^A$/ /'
-    - 'xform/^M$/,/'
-    - 'xform/^X$/./'
     - 'xform/[-]+$//'
-    - xform/^FBM$/m/
-    - xform/^HGM$/ng/
     - xform/^FB/m/
     - xform/^LD/n/
     - xform/^HG/ng/
-    - xform/^SG/gw/
-    - xform/^SK/kw/
+    - xform/^SH?G/gw/
+    - xform/^SH?K/kw/
     - xform/^SH/w/
     - xform/^CL/j/
     - xform/^ZF//
@@ -75,17 +71,17 @@ chord_composer:
     - xform/Y/yu/
     - xform/V(J|[JW]?R)$/eo${1}/
     - xform/V/oe/
-    - xform/[JWM]Q$/-ng/
+    - xform/(WR?|R)X$/-m/
     - xform/[JW]R$/-n/
-    - xform/[JM]X$/-m/
-    - xform/Q$/-k/
-    - xform/R$/-t/
+    - xform/[JW]Q$/-ng/
     - xform/X$/-p/
+    - xform/R$/-t/
+    - xform/Q$/-k/
     - xform/IJ$/ei/
     - xform/UW$/ou/
     - xform/J$/-i/
     - xform/W$/-u/
-    - xlit/SCZHLFGDBKTPEOIUM/sczhlfgdbktpeoium/
+    - xlit/SCZHLFGDBKTPEOIU/sczhlfgdbktpeoiu/
     - xform/([aeiou])-([iumptk]|ng?)$/${1}${2}/
     - xform/-/a/
     - xform/^([iy])/j${1}/
