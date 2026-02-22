@@ -66,9 +66,9 @@ chord_composer:
     - xform/^ZF//
     - xform/AI/E/
     - xform/AU/O/
-    - xform/AY/V/
+    - xform/AY|EO/V/
     - xform/A/aa/
-    - xform/Y/yu/
+    - xform/Y|IU/yu/
     - xform/V(J|[JW]?R)$/eo${1}/
     - xform/V/oe/
     - xform/(WR?|R)X$/-m/
