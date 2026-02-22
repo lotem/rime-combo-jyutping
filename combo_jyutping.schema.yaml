@@ -71,7 +71,7 @@ chord_composer:
     - xform/Y|IU/yu/
     - xform/V(J|[JW]?R)$/eo${1}/
     - xform/V/oe/
-    - xform/(WR?|R)X$/-m/
+    - xform/(WR?|R|JQ?|Q)X$/-m/
     - xform/[JW]R$/-n/
     - xform/[JW]Q$/-ng/
     - xform/X$/-p/
