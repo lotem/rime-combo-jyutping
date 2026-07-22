@@ -87,7 +87,7 @@ chord_composer:
     - xform/([aeiou])-([iumptk]|ng?)$/${1}${2}/
     - xform/-/a/
     - xform/^([iy])/j${1}/
-    - xform/^(u)/w${1}/
+    - xform/^(u[int]?)$/w${1}/
 
   # 並擊完成後套用的式樣
   output_format:
