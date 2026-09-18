@@ -4,14 +4,13 @@
 schema:
   schema_id: combo_jyutping
   name: 宮保粵拼
-  version: '2.0'
+  version: '4.0'
   author:
     - 居戎氏 <chen.sst@gmail.com>
   description: |
     按照宮保拼音思路設計的粵拼並擊方案。
+    以《分韻撮要》音系爲基礎，兼顧現代廣州話。
 
-    宮保拼音——並擊輸入拼音。
-    https://github.com/rime/home/wiki/ComboPinyin
   dependencies:
     - jyutping
 
@@ -31,7 +30,7 @@ engine:
   processors:
     - ascii_composer
     - recognizer
-    - chord_composer  # 實現並擊按鍵處理
+    - chord_composer
     - key_binder
     - speller
     - punctuator
@@ -51,85 +50,237 @@ engine:
     - simplifier
     - uniquifier
 
-chord_composer:
-  alphabet: 'swxdecfrvgtb hynjumkilopaqz'
-  algebra:
-    - 'xlit|swxdecfrvgtb hynjumkilopaqz|SCZHLFGDBKTPAEOVIUYJWQRX---|'
-    - 'xform/^A$/ /'
-    - 'xform/[-]+$//'
-    - xform/^FB/m/
-    - xform/^LD/n/
-    - xform/^HG/ng/
-    - xform/^SH?G/gw/
-    - xform/^SH?K/kw/
-    - xform/^SH/w/
-    - xform/^CL/j/
-    - xform/^ZF//
-    - xform/AI/E/
-    - xform/AU/O/
-    - xform/AY|EO/V/
-    - xform/A/aa/
-    - xform/Y|IU/yu/
-    - xform/V(J|[JW]?R)$/eo${1}/
-    - xform/V/oe/
-    - xform/([JW][QR]?|[QR])X$/-m/
-    - xform/[JW]R$/-n/
-    - xform/[JW]Q$/-ng/
-    - xform/X$/-p/
-    - xform/R$/-t/
-    - xform/Q$/-k/
-    - xform/IJ$/ei/
-    - xform/UW$/ou/
-    - xform/O[JW]$/oi/  # 活用
-    - xform/J$/-i/
-    - xform/W$/-u/
-    - xlit/SCZHLFGDBKTPEOIU/sczhlfgdbktpeoiu/
-    - xform/([aeiou])-([iumptk]|ng?)$/${1}${2}/
-    - xform/-/a/
-    - xform/^([iy])/j${1}/
-    - xform/^(u[int]?)$/w${1}/
+# ==========================================
+# 1. 串流並擊（聲韻大寫、韻尾小寫）
+# 並擊鍵序：SCZHLFGDBKTPAEOVIUYiuktp
+# ==========================================
+streaming_chord:
+  initial_keys: SCZHLFGDBKTP
+  final_keys: AEOVIUYiuktp
+  chord_duration_ms: 60
+  chord_timeout_ms: 120
+  key_map:
+    # --- 左手聲母區（大寫） ---
+    s: S
+    w: C
+    x: Z
+    d: H
+    e: L
+    c: F
+    f: G
+    r: D
+    v: B
+    g: K
+    t: T
+    b: P
 
-  # 並擊完成後套用的式樣
-  output_format:
-    # 追加隔音符號
-    - "xform/^(m|ng)$/$1'/"
-    - "xform/^([bpmfdtnlgkhzcsjw]|ng|[gk]w)?(aa?|eo?|i|oe?|y?u)([iumnptk]|ng)?$/$1$2$3'/"
-    # 消除不構成合法音節的並擊組合
-    - "erase/^([A-Za-z+]+)$/"
+    # --- 右手元音區（大寫） ---
+    space: A   # 拇指 aa
+    h: E       # 食指 e
+    y: O       # 中指 o
+    n: V       # 食指下排 oe/eo
+    j: I       # 中指 i
+    u: U       # 無名指 u
+    m: Y       # 中指下排 yu
 
-  # 並擊過程中套用的式樣
-  prompt_format:
-    # 加方括弧
-    - 'xform/^(.*)$/[$1]/'
+    # --- 右手韻尾區（直觀小寫） ---
+    k: i       # -i
+    i: u       # -u
+    l: k       # -k
+    o: t       # -t
+    p: p       # -p
 
-editor:
-  bindings:
-    # 退格鍵刪除一個拼音音節
-    BackSpace: back_syllable
+    # --- 閒置防誤觸 ---
+    q: '_'
+    a: '_'
+    z: '_'
+  canonicalize:
+    __include: /jyutping_canonicalize
 
+# ==========================================
+# 2. 字母表與拼寫代數
+# ==========================================
 speller:
-  alphabet: "zyxwvutsrqponmlkjihgfedcba'"
-  initials: "zyxwvutsrqponmlkjihgfedcba"
-  finals: "'"
-  delimiter: " "
+  alphabet: 'SCZHLFGDBKTPAEOVIUYiuktp[]'
+  delimiter: " '"
   algebra:
-    # 拼音音節一律後加隔音符號，避免音節切分歧義
-    - "xform/^([a-z]+)$/$1'/"
+    __include: /jyutping_algebra
 
+# ==========================================
+# 3. 翻譯器與回顯設置
+# ==========================================
 translator:
   dictionary: jyutping
   prism: combo_jyutping
+  enable_completion: false
+  canonicalize:
+    __include: /jyutping_canonicalize
   preedit_format:
-    - "xform/'//"
+    __include: /jyutping_preedit
+
+editor:
+  bindings:
+    BackSpace: back_syllable
+    Return: confirm
+
+ascii_composer:
+  bindings:
+    "Shift+KP_Enter": commit_raw_input
+    "Shift+Return": commit_raw_input
+    "Shift+space": commit_raw_input_with_space
+  inline_keypad: true
+  inline_uppercase: true
+
+recognizer:
+  patterns:
+    punct: "^/([0-9]0?|[A-Za-z]+)$"
 
 punctuator:
   import_preset: default
 
 key_binder:
   import_preset: default
+  bindings:
+    - { when: paging, accept: comma, send: comma }
+    - { when: has_menu, accept: period, send: period }
 
-recognizer:
-  import_preset: default
+# ==========================================
+# 私有規則定義
+# ==========================================
+
+jyutping_canonicalize:
+  - xform/_//
+  - reorder SCZHLFGDBKTPAEOVIUYiuktp
+  - xform/^[A-Za-z]+$/[$0]/
+
+jyutping_algebra:
+  # 1. 聲調剝離
+  - derive/^([a-z]+)[1-6]$/$1/
+  - 'erase/^.*[0-9]$/'
+
+  # 2. 聲母基準轉寫
+  - xform/^m/FB/
+  - xform/^ng/HG/
+  - xform/^n/LD/
+  - xform/^gw/SHG/
+  - xform/^kw/SHK/
+
+  # 先派生零聲母省擊（單打 U=wu, I=ji, Y=jyu）
+  - derive/^w(u[int]?)$/$1/
+  - derive/^j([iy].*)$/$1/
+
+  # 聲母 w, j 正式轉寫爲 SH, CL
+  - xform/^w/SH/
+  - xform/^j/CL/
+
+  # 3. 韻母基準轉寫（以 JWQRX 作爲安全過渡標記）
+  - xform/([aeiou])n$/${1}WR/
+  - xform/([aeoiu])t$/${1}R/
+  - xform/([aeoiu])ng$/${1}JQ/
+  - xform/([aeoiu])k$/${1}Q/
+  - xform/([aeoiu])m$/${1}WRX/
+  - xform/([aeoiu])p$/${1}X/
+
+  - xform/ei$/IJ/
+  - xform/([aou])i$/${1}J/
+  - xform/ou$/UW/
+  - xform/([aei])u$/${1}W/
+
+  - xform/aa/A/
+  - xform/oe|eo/V/
+
+  # 4. 特殊元音與短 a 消除
+  - xform/yu/Y/
+  - xform/a//
+
+  # 5. 聲母與元音正規化爲大寫
+  - xlit/sczhlfgdbktpeoiu/SCZHLFGDBKTPEOIU/
+
+  # 6. 安全落地：過渡韻尾轉直觀小寫
+  - xlit/JWQRX/iuktp/
+
+  # 7. 零聲母音節處理：單擊空格爲空格，音節 aa 強制與 ZF 並擊
+  - xform/^A$/ZFA/
+  - derive/^[AEOVIUYiuktp]/ZF$0/
+
+  # 7. 活用指法派生
+  - derive/^SHG/SG/
+  - derive/^SHK/SK/
+  - derive/([OU])ik$/$1uk/
+  - derive/([VYI])ut$/$1it/
+  - derive/Iutp$/Iitp/
+  - derive/Iutp$/Iikp/
+  - derive/utp$/ikp/
+  - derive/Oi$/Ou/
+
+  # 8. 元音活用
+  - derive/E/AI/
+  - derive/O/AU/
+  - derive/V/AY/
+  - derive/V/EO/
+  - derive/Y/IU/
+
+  # 9. 音節閉包定界
+  - xform/^.+$/[$0]/
+
+# ==========================================
+# 預編輯回顯：將大寫聲韻與小寫韻尾還原爲標準粵拼
+# ==========================================
+jyutping_preedit:
+  - xform/_//
+  - reorder SCZHLFGDBKTPAEOVIUYiuktp
+  - xform/\[?([A-Za-z]+)\]?/[$1]/
+
+  # 1. 小寫韻尾轉回過渡代號
+  - xlit/iuktp/JWQRX/
+
+  # 2. 聲母還原
+  - xform/\[FB/[m/
+  - xform/\[LD/[n/
+  - xform/\[HG/[ng/
+  - xform/\[SH?G/[gw/
+  - xform/\[SH?K/[kw/
+  - xform/\[SH/[w/
+  - xform/\[CL/[j/
+  - xform/\[ZF/[/
+
+  # 3. 複合元音與活用元音還原
+  - xform/AI/E/
+  - xform/AU/O/
+  - xform/AY|EO/V/
+  - xform/A/aa/
+  - xform/Y|IU/yu/
+  - xform/V(J|[JW]?R)\]/eo$1]/
+  - xform/V/oe/
+
+  # 4. 韻尾還原爲臨時帶 - 的標記
+  - xform/([JW][QR]?|[QR])X\]/-m]/
+  - xform/[JW]R\]/-n]/
+  - xform/[JW]Q\]/-ng]/
+  - xform/X\]/-p]/
+  - xform/R\]/-t]/
+  - xform/Q\]/-k]/
+
+  # 5. 雙元音還原
+  - xform/IJ\]/ei]/
+  - xform/UW\]/ou]/
+  - xform/O[JW]\]/oi]/
+  - xform/J\]/-i]/
+  - xform/W\]/-u]/
+
+  # 6. 大寫字母轉小寫
+  - xlit/SCZHLFGDBKTPEOIU/sczhlfgdbktpeoiu/
+
+  # 7. 元音與短 a 還原
+  - xform/([aeiou])-([iumptk]|ng?)\]/$1$2]/
+  - xform/-/a/
+
+  # 8. 零聲母正規化 (i/yu 補 j，u 補 w)
+  - xform/\[([iy])/\[j$1/
+  - xform/\[(u[int]?\])/\[w$1/
+
+  # 9. 脫除定界括號
+  - xform/\[([a-z]+)\]/$1/
 
 __patch:
   # 使用八股文語言模型
